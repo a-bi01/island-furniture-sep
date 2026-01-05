@@ -1,0 +1,351 @@
+<script src="../checkCountry.js"></script>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Island Furniture - Showroom</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="../../header.js"></script>
+    <script src="menu2.js"></script>
+
+
+ <style>
+        /* --- 1. VISUAL FILTER CARDS --- */
+        .room-card {
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+            text-align: center;
+            margin-bottom: 20px;
+            opacity: 0.6;
+        }
+        .room-card:hover { transform: translateY(-5px); opacity: 1; }
+        .room-card.filter-active { border-bottom: 3px solid #0088cc; opacity: 1; font-weight: bold; }
+        .room-card img {
+            width: 100%; height: 100px; object-fit: cover;
+            border-radius: 5px; margin-bottom: 10px; border: 1px solid #ddd;
+        }
+        .room-card h5 { font-size: 14px; text-transform: uppercase; margin: 0; }
+
+        .interactive-container {
+            position: relative; width: 100%; overflow: hidden;
+            border-radius: 4px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            margin-bottom: 40px;
+        }
+        .interactive-image { width: 100%; height: auto; display: block; min-height: 400px; object-fit: cover; }
+     
+        .hotspot {
+            position: absolute; width: 30px; height: 30px;
+            background: rgba(255, 255, 255, 0.7); border-radius: 50%;
+            cursor: pointer; animation: pulse 2s infinite; transition: all 0.3s ease;
+        }
+        .hotspot:hover { background: #fff; transform: scale(1.1); z-index: 100; }
+        .hotspot::after {
+            content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 12px; height: 12px; background: #333; border-radius: 50%;
+        }
+
+        
+        .hotspot .popover-card {
+            visibility: hidden; opacity: 0; width: 220px;
+            background-color: #fff; color: #333; text-align: left;
+            border-radius: 4px; padding: 15px; position: absolute;
+            z-index: 10; bottom: 140%; left: 50%; transform: translateX(-50%);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3); transition: opacity 0.3s, visibility 0.3s;
+        }
+        .hotspot:hover .popover-card { visibility: visible; opacity: 1; }
+
+      
+        .hotspot .popover-card::after {
+            content: ""; position: absolute; top: 100%; left: 50%; margin-left: -8px;
+            border-width: 8px; border-style: solid; border-color: #fff transparent transparent transparent;
+        }
+      
+        .pop-title { font-weight: bold; font-size: 1.1em; display:block; }
+        .pop-cat { font-size: 0.8em; color: #777; display:block; margin-bottom:5px; }
+        .pop-price { color: #d9534f; font-weight: bold; font-size: 1.2em; float: right;}
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7); }
+            70% { box-shadow: 0 0 0 15px rgba(255, 255, 255, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
+        }
+
+     
+        #showroomDisplay {
+            display: block; 
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        /* This forces a new line every 4 items so they don't get stuck */
+        @media (min-width: 992px) {
+            #showroomDisplay li:nth-child(4n+1) {
+                clear: left;
+            }
+        }
+    
+
+        body { padding-top: 10px !important; }
+    </style>
+</head>
+
+<script src="../../header.js"></script>
+
+<body>
+    <div class="body">
+        <div role="main" class="main">
+            <section class="page-top">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h2>Furniture Showroom</h2>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="container">
+
+                <!-- SECTION 1: INTERACTIVE FEATURED ROOM -->
+                <div class="row" id="featured-room-section">
+                    <div class="col-md-12">
+                        <h3 class="heading-primary" style="text-align:center;" id="featured-title">Featured: Modern Living</h3>
+                        
+                        <div class="interactive-container">
+                            <!-- Main Image (Changes dynamically) -->
+                            <img src="../../img/products/scene_living.jpg" id="featured-image" class="interactive-image" alt="Room Scene">
+                            
+                            <!-- Dots are injected here by JS -->
+                            <div id="hotspot-layer"></div>
+                        </div>
+                    </div>
+                </div>
+
+             <!-- SECTION 2: VISUAL ROOM FILTERS -->
+<div class="row" id="room-filters" style="margin-bottom: 40px; border-bottom: 1px solid #eee; padding-bottom: 20px;">
+    <div class="col-md-12" style="text-align:center; margin-bottom:20px;">
+        <h4>Browse by Category</h4>
+    </div>
+
+    <!-- 1. All (Keep default or make a collage) -->
+    <div class="col-md-2 col-sm-4 col-xs-6 room-card" id="btnAll" onclick="loadAllItems()">
+         <img src="../../img/products/scene_all.jpg" alt="All">
+        <h5>All</h5>
+    </div>
+
+    <!-- 2. Living Room (Uses Scene Image) -->
+    <div class="col-md-2 col-sm-4 col-xs-6 room-card" id="btnLiving" onclick="filterByRoom('Living Room', 'btnLiving')">
+        <!-- CHANGED TO SCENE IMAGE -->
+        <img src="../../img/products/scene_living.jpg" alt="Living">
+        <h5>Living Room</h5>
+    </div>
+
+    <!-- 3. Bedroom (Uses Scene Image) -->
+    <div class="col-md-2 col-sm-4 col-xs-6 room-card" id="btnBedroom" onclick="filterByRoom('Bedroom', 'btnBedroom')">
+        <!-- CHANGED TO SCENE IMAGE -->
+        <img src="../../img/products/scene_bedroom.jpg" alt="Bedroom">
+        <h5>Bedroom</h5>
+    </div>
+
+    <!-- 4. Study (Uses Scene Image) -->
+    <div class="col-md-2 col-sm-4 col-xs-6 room-card" id="btnStudy" onclick="filterByRoom('Study', 'btnStudy')">
+        <!-- CHANGED TO SCENE IMAGE -->
+        <img src="../../img/products/scene_study.jpg" alt="Study">
+        <h5>Study & Office</h5>
+    </div>
+
+    <!-- 5. Bathroom (Uses Scene Image) -->
+    <div class="col-md-2 col-sm-4 col-xs-6 room-card" id="btnBathroom" onclick="filterByRoom('Bathroom', 'btnBathroom')">
+        <!-- CHANGED TO SCENE IMAGE -->
+        <img src="../../img/products/scene_bathroom.jpg" alt="Bathroom">
+        <h5>Bathroom</h5>
+    </div>
+
+                <!-- SECTION 3: PRODUCT GRID -->
+                <div class="row">
+                    <ul id="showroomDisplay" class="products product-thumb-info-list" style="list-style-type: none; margin-left: -3%;">
+                        <div style="text-align:center; padding:50px;">
+                            <i class="fa fa-spinner fa-spin fa-3x"></i><br>Loading Furniture...
+                        </div>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <script src="../footer.js"></script>
+    </div>
+
+ 
+   <script>
+       
+        var roomScenes = {
+            'Living Room': {
+                image: '../../img/products/scene_living.jpg',
+                title: 'Featured: Modern Living',
+                hotspots: [
+                    { top: '60%', left: '45%', name: 'FRIHETEN', cat: 'Sofas', price: '$709', sku: 'F_SC_40' },
+                    { top: '55%', left: '60%', name: 'LACK Table', cat: 'Tables', price: '$45', sku: 'F_TD_05' },
+                ]
+            },
+            'Bedroom': {
+                image: '../../img/products/scene_bedroom.jpg',
+                title: 'Featured: Cozy Bedroom',
+                hotspots: [
+                    { top: '55%', left: '50%', name: 'BRIMNES', cat: 'Beds', price: '$350', sku: 'F_BM_21' },
+                    { top: '40%', left: '30%', name: 'PAX', cat: 'Storage', price: '$500', sku: 'F_CS_41' }
+                ]
+            },
+            'Study': {
+                image: '../../img/products/scene_study.jpg',
+                title: 'Featured: Home Office',
+                hotspots: [
+                    { top: '45%', left: '55%', name: 'LINMON', cat: 'Desks', price: '$120', sku: 'F_TD_01' },
+                    { top: '50%', left: '75%', name: 'MARKUS', cat: 'Chairs', price: '$150', sku: 'F_SC_42' }
+                ]
+            },
+            'Bathroom': {
+                image: '../../img/products/scene_bathroom.jpg',
+                title: 'Featured: Refreshing Bathroom',
+                hotspots: [
+                    { top: '60%', left: '60%', name: 'TALLEVIKEN', cat: 'Sinks', price: '$43', sku: 'F_BA_11' },
+                    { top: '65%', left: '20%', name: 'GODMORGON', cat: 'Storage', price: '$150', sku: 'F_BA_15' }
+                ]
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', function () {
+            loadAllItems();
+            updateFeaturedRoom('Living Room'); 
+        }, false);
+
+    
+        function loadAllItems() {
+            highlightButton('btnAll');
+           
+            updateFeaturedRoom('Living Room');
+
+            fetch(new Request('/api/getShowroomItems', { method: 'GET' }))
+            .then(response => response.json())
+            .then(data => renderFurniture(data))
+            .catch(error => console.log(error));
+        }
+
+        
+        function filterByRoom(dbCategoryName, btnId) {
+            highlightButton(btnId);
+            
+        
+            updateFeaturedRoom(dbCategoryName);
+
+            fetch(new Request('/api/getShowroomItemsByRoom/' + encodeURIComponent(dbCategoryName), { method: 'GET' }))
+            .then(response => response.json())
+            .then(data => renderFurniture(data))
+            .catch(error => console.log(error));
+        }
+
+   
+        function updateFeaturedRoom(roomName) {
+            //
+            var sceneKey = 'Living Room'; 
+            
+            if (roomName.includes('Bedroom') || roomName.includes('Bed')) sceneKey = 'Bedroom';
+            else if (roomName.includes('Study') || roomName.includes('Table')) sceneKey = 'Study';
+            else if (roomName.includes('Bathroom')) sceneKey = 'Bathroom'; 
+            else if (roomName.includes('Storage')) sceneKey = 'Living Room'; 
+            
+            var data = roomScenes[sceneKey];
+            if (!data) return;
+
+            
+            var imgEl = document.getElementById('featured-image');
+            imgEl.style.opacity = 0; 
+            setTimeout(function() {
+                imgEl.src = data.image;
+                document.getElementById('featured-title').innerHTML = data.title;
+                imgEl.style.opacity = 1;
+            }, 200);
+
+        
+            var layer = document.getElementById('hotspot-layer');
+            layer.innerHTML = ''; 
+            
+            data.hotspots.forEach(function(dot) {
+                var html = `
+                <div class="hotspot" style="top: ${dot.top}; left: ${dot.left};">
+                    <div class="popover-card">
+                        <span class="pop-title">${dot.name}</span>
+                        <span class="pop-cat">${dot.cat}</span>
+                        <div class="pop-price">${dot.price}</div>
+                        <a href="furnitureProductDetails.html?sku=${dot.sku}" class="btn btn-primary btn-xs" style="margin-top:5px;">View Details</a>
+                    </div>
+                </div>`;
+                layer.innerHTML += html;
+            });
+        }
+
+        
+        function renderFurniture(data) {
+            var htmlTxt = '';
+            if (data.length === 0) {
+                document.getElementById("showroomDisplay").innerHTML = '<h3 style="text-align:center; color:#777;">No items found.</h3>';
+                return;
+            }
+
+            for (var i = 0; i < data.length; i++) {
+                var furniture = data[i];
+                var imgPath = '/img/products/default.jpg';
+                if (furniture.IMAGEURL) {
+                    if (furniture.IMAGEURL.indexOf('/') > -1) imgPath = furniture.IMAGEURL;
+                    else imgPath = '/img/products/' + furniture.IMAGEURL;
+                }
+
+            htmlTxt += '\
+                <li class="col-md-3 col-sm-6 col-xs-12 product" style="padding-bottom: 1%; padding-top: 2%;">\
+                    <span class="product-thumb-info">\
+                        <span class="product-thumb-info-image">\
+                            <span class="product-thumb-info-act">\
+                                <span class="product-thumb-info-act-left">\
+                                    <a href="furnitureProductDetails.html?sku=' + furniture.SKU + '" style="color: white"><em>View Details</em></a>\
+                                </span>\
+                            </span>\
+                            <img alt="" class="img-responsive" src="' + imgPath + '" style="height: 200px; width: 100%; object-fit: contain;">\
+                        </span>\
+                        <span class="product-thumb-info-content">\
+                            <h4>' + furniture.NAME + '</h4>\
+                            <span class="product-thumb-info-act-left">\
+                                <em>' + furniture.CATEGORY + '</em>\
+                            </span><br/>\
+                            <span class="product-thumb-info-act-left">\
+                                <em style="font-size: 0.8em; color: #777;">H: ' + furniture.HEIGHT + ' | W: ' + furniture.WIDTH + ' | L: ' + furniture._LENGTH + '</em>\
+                            </span><br/>\
+                            \
+                            <!-- FULL DESCRIPTION (No limit) -->\
+                            <div style="font-size: 0.85em; color: #666; margin: 10px 0; display: block;">\
+                                ' + (furniture.DESCRIPTION || '') + '\
+                            </div>\
+                            \
+                            <span class="product-thumb-info-act-left">\
+                                <em style="color: #d9534f; font-weight: bold;">Price: $' + (furniture.RETAILPRICE || '0.00') + '</em>\
+                            </span><br/>\
+                            <a href="furnitureProductDetails.html?sku=' + furniture.SKU + '" class="btn btn-primary btn-block">View Details</a>\
+                        </span>\
+                    </span>\
+                </li>';
+            }
+            document.getElementById("showroomDisplay").innerHTML = htmlTxt;
+        }
+
+   
+        function highlightButton(btnId) {
+            var cards = document.getElementsByClassName('room-card');
+            for (var i = 0; i < cards.length; i++) cards[i].classList.remove('filter-active');
+            var btn = document.getElementById(btnId);
+            if (btn) btn.classList.add('filter-active');
+        }
+    </script>
+
+    <script src="../../js/theme.js"></script>
+    <script src="../../js/theme.init.js"></script>
+</body>
+</html>
