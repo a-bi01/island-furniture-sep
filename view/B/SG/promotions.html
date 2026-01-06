@@ -189,6 +189,8 @@
 
         for (var i = 0; i < data.length; i++) {
             var p = data[i];
+            var sku = pick(p, ["SKU","sku"], "");
+            var detailsLink = sku ? ("furnitureProductDetails.html?sku=" + encodeURIComponent(sku)) : "#";
 
             // Support different backend field names (uppercase/lowercase)
             var title = pick(p, ["TITLE","title","PROMOTIONNAME","promotionName","NAME","name"], "Promotion");
@@ -214,13 +216,16 @@
                             <strong>' + esc(title) + '</strong>\
                         </div>\
                         <div class="panel-body">\
-                            <img class="promo-img" src="' + esc(imgPath) + '" alt="' + esc(title) + '" onerror="this.src=\'/img/products/default.jpg\'">\
+                            <a href="' + detailsLink + '">\
+  <img class="promo-img" src="' + esc(imgPath) + '" alt="' + esc(title) + '" onerror="this.src=\'/img/products/default.jpg\'">\
+</a>\
                             <hr style="margin:12px 0;">\
-                            <div>Discount: <span class="discount-rate">' + esc(rateDisplay) + '</span></div>\
+                           <div>Discount: <span class="discount-rate">' + esc(rateDisplay) + '%</span></div>\
                             <div style="margin-top:8px; color:#666;">' + esc(desc) + '</div>\
                             <div class="promo-meta" style="margin-top:10px;">\
                                 ' + (start || end ? ('Valid: ' + formatDate(start) + ' to ' + formatDate(end)) : '') + '\
                             </div>\
+                            <a class="btn btn-primary btn-block" style="margin-top:12px;" href="' + detailsLink + '">View Item</a>\
                         </div>\
                     </div>\
                 </li>';

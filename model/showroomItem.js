@@ -40,7 +40,14 @@ module.exports.getPromotions = function (callback) {
             return callback(err, null);
         }
 
-        var sql = 'SELECT * FROM promotionentity';
+        var sql = `
+  SELECT 
+    p.ID, p.DESCRIPTION, p.DISCOUNTRATE, p.STARTDATE, p.ENDDATE, p.IMAGEURL,
+    p.COUNTRY_ID, p.ITEM_ID,
+    i.SKU, i.NAME AS ITEMNAME, i.CATEGORY
+  FROM promotionentity p
+  JOIN itementity i ON p.ITEM_ID = i.ID
+`;
 
         conn.query(sql, function (err, result) {
             conn.end();
