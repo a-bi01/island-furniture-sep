@@ -1,0 +1,252 @@
+<script src="../checkCountry.js"></script>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Island Furniture - Promotions</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Same pattern as showroom.html -->
+    <script src="../../header.js"></script>
+    <script src="menu2.js"></script>
+
+    <style>
+        body { padding-top: 10px !important; }
+
+        /* Make discount rate RED (requirement) */
+        .discount-rate {
+            color: #d9534f; /* bootstrap danger red */
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .promo-card {
+            margin-bottom: 20px;
+        }
+
+        .promo-img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            border-radius: 4px;
+            border: 1px solid #eee;
+        }
+
+        .promo-meta {
+            font-size: 0.85em;
+            color: #777;
+        }
+
+        #promoList {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        /* force new line every 3 cards on md */
+        @media (min-width: 992px) {
+            #promoList li:nth-child(3n+1) {
+                clear: left;
+            }
+        }
+    </style>
+</head>
+
+
+<body>
+<div class="body">
+    <div role="main" class="main">
+
+        <section class="page-top">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-12">
+                        <h2>Promotions</h2>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="container">
+
+            <div class="row">
+                <div class="col-md-12">
+                    <p>View active promotions available now.</p>
+                </div>
+            </div>
+
+            <!-- Message Area -->
+            <div class="row" style="margin-top:10px;">
+                <div class="col-md-12">
+                    <div id="msgBox" class="alert alert-info" style="display:none;"></div>
+                </div>
+            </div>
+
+            <!-- Promotions Grid -->
+            <div class="row">
+                <ul id="promoList" style="margin-left:-3%;">
+                    <div style="text-align:center; padding:50px;">
+                        <i class="fa fa-spinner fa-spin fa-3x"></i><br>Loading Promotions...
+                    </div>
+                </ul>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="../footer.js"></script>
+</div>
+
+<script>
+    // Based on your showroom endpoints style, most likely this is correct:
+    // If your backend route is different, change ONLY this line.
+    var PROMO_API = "/api/getPromotions";
+
+    function showMsg(text, type) {
+        var box = document.getElementById("msgBox");
+        box.className = "alert alert-" + (type || "info");
+        box.innerHTML = text;
+        box.style.display = "block";
+    }
+
+    function hideMsg() {
+        var box = document.getElementById("msgBox");
+        box.style.display = "none";
+    }
+
+    function normalizeImgPath(path) {
+        if (!path) return "../../img/products/default.jpg";
+
+        // already absolute
+        if (path.indexOf("http://") === 0 || path.indexOf("https://") === 0) return path;
+
+        // already has folder
+        if (path.indexOf("/") > -1) {
+            // ensure it starts with /
+            if (path.charAt(0) !== "/") return "/" + path;
+            return path;
+        }
+
+        // filename only -> assume products folder like showroom
+        return "/img/products/" + path;
+    }
+
+    function esc(s) {
+        if (s === null || s === undefined) return "";
+        return String(s)
+            .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    }
+
+    function pick(obj, keys, fallback) {
+        for (var i = 0; i < keys.length; i++) {
+            var k = keys[i];
+            if (obj && obj[k] !== undefined && obj[k] !== null && obj[k] !== "") return obj[k];
+        }
+        return fallback;
+    }
+
+    function formatDate(iso) {
+  if (!iso) return "-";
+  var d = new Date(iso);
+  if (isNaN(d.getTime())) return iso;
+  return d.toLocaleDateString("en-SG", { year: "numeric", month: "short", day: "2-digit" });
+}
+
+    function normalizePromoImgPath(imageUrl) {
+  if (!imageUrl) return "/img/products/default.jpg";
+
+  // Case 1: already correct for Node (starts with /img/)
+  if (imageUrl.indexOf("/img/") === 0) return imageUrl;
+
+  // Case 2: legacy path from Java project (IS3102_Project-war)
+  // Convert: /IS3102_Project-war/img/promotions/xxx.jpg  ->  /img/promotions/xxx.jpg
+  if (imageUrl.indexOf("/IS3102_Project-war/img/") === 0) {
+    return imageUrl.replace("/IS3102_Project-war/img/", "/img/");
+  }
+
+  // Case 3: absolute URL
+  if (imageUrl.indexOf("http://") === 0 || imageUrl.indexOf("https://") === 0) return imageUrl;
+
+  // Case 4: has slash but not starting slash
+  if (imageUrl.indexOf("/") > -1 && imageUrl.charAt(0) !== "/") return "/" + imageUrl;
+
+  // Case 5: filename only -> assume promotions folder
+  return "/img/promotions/" + imageUrl;
+}
+
+
+    function renderPromotions(data) {
+        var list = document.getElementById("promoList");
+        hideMsg();
+
+        if (!data || !data.length) {
+            list.innerHTML = "";
+            showMsg("No active promotions available at the moment.", "info");
+            return;
+        }
+
+        var htmlTxt = "";
+
+        for (var i = 0; i < data.length; i++) {
+            var p = data[i];
+
+            // Support different backend field names (uppercase/lowercase)
+            var title = pick(p, ["TITLE","title","PROMOTIONNAME","promotionName","NAME","name"], "Promotion");
+            var desc  = pick(p, ["DESCRIPTION","description","DETAILS","details"], "");
+            var rate  = pick(p, ["DISCOUNTRATE","discountRate","DISCOUNT","discount","RATE","rate"], "");
+            var img   = pick(p, ["IMAGEURL","imageUrl","IMAGE","image","IMG","img"], "");
+            var start = pick(p, ["STARTDATE","startDate","START","start"], "");
+            var end   = pick(p, ["ENDDATE","endDate","END","end"], "");
+
+            var imgPath = normalizePromoImgPath(img);
+
+            // If rate is numeric like 0.2, show 20%
+            var rateDisplay = rate;
+            if (rate !== "" && !isNaN(rate)) {
+                var n = Number(rate);
+                if (n > 0 && n < 1) rateDisplay = Math.round(n * 100) + "%";
+            }
+
+            htmlTxt += '\
+                <li class="col-md-4 col-sm-6 col-xs-12 promo-card" style="padding-bottom: 1%; padding-top: 2%;">\
+                    <div class="panel panel-default">\
+                        <div class="panel-heading">\
+                            <strong>' + esc(title) + '</strong>\
+                        </div>\
+                        <div class="panel-body">\
+                            <img class="promo-img" src="' + esc(imgPath) + '" alt="' + esc(title) + '" onerror="this.src=\'/img/products/default.jpg\'">\
+                            <hr style="margin:12px 0;">\
+                            <div>Discount: <span class="discount-rate">' + esc(rateDisplay) + '</span></div>\
+                            <div style="margin-top:8px; color:#666;">' + esc(desc) + '</div>\
+                            <div class="promo-meta" style="margin-top:10px;">\
+                                ' + (start || end ? ('Valid: ' + formatDate(start) + ' to ' + formatDate(end)) : '') + '\
+                            </div>\
+                        </div>\
+                    </div>\
+                </li>';
+        }
+
+        list.innerHTML = htmlTxt;
+    }
+
+    // Load promotions
+    document.addEventListener("DOMContentLoaded", function() {
+        fetch(new Request(PROMO_API, { method: "GET" }))
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                // support: API returns { promotions: [...] } or [...]
+                var arr = Array.isArray(data) ? data : (data && data.promotions ? data.promotions : []);
+                renderPromotions(arr);
+            })
+            .catch(function(err) {
+                console.log(err);
+                document.getElementById("promoList").innerHTML = "";
+                showMsg("Unable to load promotions right now. Please try again later.", "danger");
+            });
+    });
+</script>
+
+<script src="../../js/theme.js"></script>
+<script src="../../js/theme.init.js"></script>
+</body>
+</html>
