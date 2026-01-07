@@ -1,6 +1,6 @@
 var db = require('./databaseConfig.js');
 
-// 1. GET ALL ITEMS
+// 1. GET ALL ITEMS - retrieves all furniture items
 module.exports.getShowroomItems = function (callback) {
     var conn = db.getConnection();
 
@@ -9,7 +9,7 @@ module.exports.getShowroomItems = function (callback) {
             return callback(err, null);
         }
 
-
+// joins multiple tables to get basic details, dimensions, images and pricing
         var sql = `
             SELECT i.ID, i.NAME, i.CATEGORY, i.SKU, i.DESCRIPTION, 
                    i._LENGTH, i.WIDTH, i.HEIGHT, 
@@ -31,7 +31,7 @@ module.exports.getShowroomItems = function (callback) {
     });
 };
 
-// 2. GET PROMOTIONS
+// 2. GET PROMOTIONS - fetches current active promotions only (leaving the expired ones)
 module.exports.getPromotions = function (callback) {
     var conn = db.getConnection();
 
@@ -40,13 +40,15 @@ module.exports.getPromotions = function (callback) {
             return callback(err, null);
         }
 
+// gets promotion details WHERE ensures we only show promotions that are still valid 
         var sql = `
   SELECT 
-    p.ID, p.DESCRIPTION, p.DISCOUNTRATE, p.STARTDATE, p.ENDDATE, p.IMAGEURL,
-    p.COUNTRY_ID, p.ITEM_ID,
-    i.SKU, i.NAME AS ITEMNAME, i.CATEGORY
-  FROM promotionentity p
-  JOIN itementity i ON p.ITEM_ID = i.ID
+                p.ID, p.DESCRIPTION, p.DISCOUNTRATE, p.STARTDATE, p.ENDDATE, p.IMAGEURL,
+                p.COUNTRY_ID, p.ITEM_ID,
+                i.SKU, i.NAME AS ITEMNAME, i.CATEGORY
+            FROM promotionentity p
+            JOIN itementity i ON p.ITEM_ID = i.ID
+            WHERE p.ENDDATE >= CURDATE()
 `;
 
         conn.query(sql, function (err, result) {
@@ -59,7 +61,7 @@ module.exports.getPromotions = function (callback) {
     });
 };
 
-// 3. GET ITEMS BY ROOM (SMART FILTER)
+// 3. GET ITEMS BY ROOM (SMART FILTER) - filters to multiple categories 
 module.exports.getShowroomItemsByRoom = function (room, callback) {
     var conn = db.getConnection();
 
@@ -87,10 +89,10 @@ module.exports.getShowroomItemsByRoom = function (room, callback) {
             categories = [room];
         }
 
-      
+// creates a string of ? matching the number of categories      
         var placeholders = categories.map(() => '?').join(',');
 
-        
+
         var sql = `
             SELECT i.ID, i.NAME, i.CATEGORY, i.SKU, i.DESCRIPTION, 
                    i._LENGTH, i.WIDTH, i.HEIGHT, 
@@ -103,6 +105,7 @@ module.exports.getShowroomItemsByRoom = function (room, callback) {
             GROUP BY i.ID, i.NAME, i.CATEGORY, i.SKU, i.DESCRIPTION, i._LENGTH, i.WIDTH, i.HEIGHT, f.IMAGEURL
         `;
 
+// pass the categories array as second argument to replace the ?
         conn.query(sql, categories, function (err, result) {
             conn.end();
             if (err) {

@@ -97,8 +97,7 @@
 </div>
 
 <script>
-    // Based on your showroom endpoints style, most likely this is correct:
-    // If your backend route is different, change ONLY this line.
+
     var PROMO_API = "/api/getPromotions";
 
     function showMsg(text, type) {
@@ -155,11 +154,11 @@
     function normalizePromoImgPath(imageUrl) {
   if (!imageUrl) return "/img/products/default.jpg";
 
-  // Case 1: already correct for Node (starts with /img/)
+  // if already correct for Node (starts with /img/)
   if (imageUrl.indexOf("/img/") === 0) return imageUrl;
 
-  // Case 2: legacy path from Java project (IS3102_Project-war)
-  // Convert: /IS3102_Project-war/img/promotions/xxx.jpg  ->  /img/promotions/xxx.jpg
+ 
+  // Converts /IS3102_Project-war/img/promotions/xxx.jpg  ->  /img/promotions/xxx.jpg
   if (imageUrl.indexOf("/IS3102_Project-war/img/") === 0) {
     return imageUrl.replace("/IS3102_Project-war/img/", "/img/");
   }
