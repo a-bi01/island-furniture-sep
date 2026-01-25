@@ -1,3 +1,5 @@
+
+require('dotenv').config();
 var db = require('./databaseConfig.js');
 var Member = require('./member.js');
 var ShoppingCartLineItem = require('./shoppingCartLineItem.js');
@@ -601,7 +603,7 @@ var generateRandomNumber = function(digits){
 var emailer = nodemailer.createTransport({
     service: 'gmail',
     auth: {
-        user: 'islandfurnituresep@gmail.com',
-        pass: 'islandFurniture123'
+        user: process.env.GMAIL_USER, 
+        pass: process.env.GMAIL_PASS  
     }
 });
