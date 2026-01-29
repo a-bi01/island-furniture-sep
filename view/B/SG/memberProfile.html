@@ -56,125 +56,120 @@
                     if(boughtItem == null || boughtItem == '') { //if member do not have any bought items
                         document.getElementById("salesHistoryTab").innerHTML = '<h5 class="center">You do not have any sales history.</h5>';
                     }
-                    else {
-                        var htmlTxt = '';
-                        var orderIdList = [];
-                        var overallPrice = 0;
-                        var finalPrice = 0;
-                        //get all order IDs
-                        for (i = 0; i < boughtItem.length; i++) {
-                            orderIdList[i] = boughtItem[i].id;
-                        }
-                        //unduplicate order IDs
-                        orderIdList = [...new Set(orderIdList)];
-                        var temp;
-                        var size = orderIdList.length;
-                        //sort order ID in ascending order
-                        for (i = 0; i < size - 1; i++) {
-                            for (j = 0; j < size - i - 1; j++) {
-                                if (orderIdList[j] > orderIdList[j+1]) {
-                                    temp = orderIdList[j];
-                                    orderIdList[j] = orderIdList[j+1];
-                                    orderIdList[j+1] = temp;
-                                }
-                            }
-                        }
-                                         
-                            htmlTxt += '<h5>Order #' + (1) + '</h5>';
-                            var counter = 0;
-                            //get bought items by order ID
-                            for (j = 0; j < boughtItem.length; j++) {
-                            
-                                if(boughtItem[j].id == orderIdList[0]) {
-                                    var item = boughtItem[j];
-                                    //display top level info
-                                    if(counter == 0) {
-                                        let options = {
-                                            weekday: "long", year: "numeric", month: "long",  
-                                            day: "numeric", hour: "2-digit", minute: "2-digit"  
-                                        };
-                                        var datePurchased = (new Date(item.createddate)).toLocaleTimeString('en-us', options);
-                                        var deliveryDate = addWorkDays(new Date(item.createddate), 5);
-                                        htmlTxt += '\
-                                            <h6>Date Purchased: ' + datePurchased + '</h6>\
-                                            <h6>Estimated Delivery Date: ' + deliveryDate + '</h6>\
-                                            <h6 style="text-decoration:underline; font-weight:bold">Delivery Details:</h6>\
-                                            <h6>Address: ' + item.address + '</h6>\
-                                            <h6>Postal Code: ' + item.postalCode + '</h6>\
-                                            <h6>Name: ' + item.customerName + '</h6>\
-                                            <h6>Contact Number: ' + item.phone + '</h6>';
-                                        counter++;
-                                    }
-                                }
-                            }
-                            //display table info
-                            htmlTxt += '\
-                                <div class="row">\
-                                    <div class="col-md-12">\
-                                        <div class="row featured-boxes">\
-                                            <div class="col-md-12">\
-                                                <div class="featured-box featured-box-secundary featured-box-cart">\
-                                                    <div class="box-content">\
-                                                        <table cellspacing="0" class="shop_table cart">\
-                                                            <thead>\
-                                                                <tr>\
-                                                                    <th class="product-thumbnail" style="width: 25%">Image</th>\
-                                                                    <th class="product-name" style="width: 38%">Product</th>\
-                                                                    <th class="product-price" style="width: 15%">Price</th>\
-                                                                    <th class="product-quantity" style="width: 15%">Quantity</th>\
-                                                                    <th class="product-subtotal" style="width: 15%">Subtotal</th>\
-                                                                </tr>\
-                                                            </thead>\
-                                                            <tbody>';
-                            for (y = 0; y < boughtItem.length; y++) {
-                            
-                                if (boughtItem[y].id == orderIdList[0]) {
-                                    var product = boughtItem[y];
-                                    htmlTxt += '\
-                                        <tr class="cart_table_item">\
-                                            <td class="product-thumbnail">\
-                                                <a href="/B/' + countryPrefix + '/furnitureProductDetails.html?sku=' + product.sku + '"><img width="100" height="100" alt="" class="img-responsive" src="' + product.imageUrl + '"></a>\
-                                            </td>\
-                                            <td class="product-name">\
-                                                <a class="productDetails" href="/B/' + countryPrefix + '/furnitureProductDetails.html?sku=' + product.sku + '">' + product.itemName + '</a>\
-                                            </td>\
-                                            <td class="product-price">\
-                                                $<span class="amount">' + product.retailPrice.toFixed(2) + '</span>\
-                                            </td>\
-                                            <td class="product-quantity">\
-                                                <span class="qty">' + product.quantity + '</span>\
-                                            </td>\
-                                            <td class="product-subtotal">\
-                                                $<span class="amount">' + product.retailPrice.toFixed(2) * product.quantity + '</span>\
-                                            </td>\
-                                        </tr>';
-                                    finalPrice += product.retailPrice.toFixed(2) * product.quantity;
-                                    overallPrice += product.retailPrice.toFixed(2) * product.quantity;
-                                }
-                            }
-                            htmlTxt += '\
-                                                                <tr>\
-                                                                    <td></td>\
-                                                                    <td></td>\
-                                                                    <td></td>\
-                                                                    <td class="product-subtotal" style="font-weight: bold; color: #cc3b33">Total:</td>\
-                                                                    <td class="product-subtotal" style="font-weight: bold">\
-                                                                        $<span class="amount" id="finalPrice" name="finalPrice">' + finalPrice + '</span>\
-                                                                    </td>\
-                                                                </tr>\
-                                                            </tbody>\
-                                                        </table>\
-                                                    </div>\
-                                                </div>\
-                                            </div>\
-                                        </div>\
-                                    </div>\
-                                </div>';
-                            finalPrice = 0;
+else {
+    var htmlTxt = '';
+    var orderIdList = [];
+    var overallPrice = 0;
 
-                        htmlTxt += '<h4 style="font-weight: bold; padding-left: 20px">Total Amount Spent: $'+ overallPrice + '</h4>';
-                        document.getElementById("salesHistoryTab").innerHTML = htmlTxt;
-                    }
+    // 1. Get all order IDs
+    for (i = 0; i < boughtItem.length; i++) {
+        orderIdList[i] = boughtItem[i].id;
+    }
+    
+    // 2. Remove duplicates and Sort
+    orderIdList = [...new Set(orderIdList)];
+    orderIdList.sort((a, b) => a - b); // Simpler way to sort numbers numerically
+
+    // 3. NEW OUTER LOOP: Iterate through EACH Order ID
+    for (var k = 0; k < orderIdList.length; k++) {
+        var currentOrderId = orderIdList[k];
+        var finalPrice = 0; // Reset subtotal for this specific order
+        var counter = 0;
+
+        htmlTxt += '<h5>Order #' + (k + 1) + '</h5>'; // Dynamic Order Number
+
+        // Inner Loop: Find items belonging to the currentOrderId
+        for (j = 0; j < boughtItem.length; j++) {
+            if (boughtItem[j].id == currentOrderId) { // <--- FIXED: Compare against current loop ID
+                var item = boughtItem[j];
+
+                // Display top level info (Date, Address) only once per order
+                if (counter == 0) {
+                    let options = {
+                        weekday: "long", year: "numeric", month: "long",
+                        day: "numeric", hour: "2-digit", minute: "2-digit"
+                    };
+                    var datePurchased = (new Date(item.createddate)).toLocaleTimeString('en-us', options);
+                    var deliveryDate = addWorkDays(new Date(item.createddate), 5);
+                    htmlTxt += '\
+                        <h6>Date Purchased: ' + datePurchased + '</h6>\
+                        <h6>Estimated Delivery Date: ' + deliveryDate + '</h6>\
+                        <h6 style="text-decoration:underline; font-weight:bold">Delivery Details:</h6>\
+                        <h6>Address: ' + item.address + '</h6>\
+                        <h6>Postal Code: ' + item.postalCode + '</h6>\
+                        <h6>Name: ' + item.customerName + '</h6>\
+                        <h6>Contact Number: ' + item.phone + '</h6>';
+
+                    // Start the Table
+                    htmlTxt += '\
+                    <div class="row">\
+                        <div class="col-md-12">\
+                            <div class="row featured-boxes">\
+                                <div class="col-md-12">\
+                                    <div class="featured-box featured-box-secundary featured-box-cart">\
+                                        <div class="box-content">\
+                                            <table cellspacing="0" class="shop_table cart">\
+                                                <thead>\
+                                                    <tr>\
+                                                        <th class="product-thumbnail" style="width: 25%">Image</th>\
+                                                        <th class="product-name" style="width: 38%">Product</th>\
+                                                        <th class="product-price" style="width: 15%">Price</th>\
+                                                        <th class="product-quantity" style="width: 15%">Quantity</th>\
+                                                        <th class="product-subtotal" style="width: 15%">Subtotal</th>\
+                                                    </tr>\
+                                                </thead>\
+                                                <tbody>';
+                    counter++;
+                }
+
+                // Add the table row for the product
+                htmlTxt += '\
+                    <tr class="cart_table_item">\
+                        <td class="product-thumbnail">\
+                            <a href="/B/' + countryPrefix + '/furnitureProductDetails.html?sku=' + item.sku + '"><img width="100" height="100" alt="" class="img-responsive" src="' + item.imageUrl + '"></a>\
+                        </td>\
+                        <td class="product-name">\
+                            <a class="productDetails" href="/B/' + countryPrefix + '/furnitureProductDetails.html?sku=' + item.sku + '">' + item.itemName + '</a>\
+                        </td>\
+                        <td class="product-price">\
+                            $<span class="amount">' + item.retailPrice.toFixed(2) + '</span>\
+                        </td>\
+                        <td class="product-quantity">\
+                            <span class="qty">' + item.quantity + '</span>\
+                        </td>\
+                        <td class="product-subtotal">\
+                            $<span class="amount">' + (item.retailPrice * item.quantity).toFixed(2) + '</span>\
+                        </td>\
+                    </tr>';
+                
+                finalPrice += item.retailPrice * item.quantity;
+                overallPrice += item.retailPrice * item.quantity;
+            }
+        }
+
+        // Close the table for this order
+        htmlTxt += '\
+                                                <tr>\
+                                                    <td></td><td></td><td></td>\
+                                                    <td class="product-subtotal" style="font-weight: bold; color: #cc3b33">Total:</td>\
+                                                    <td class="product-subtotal" style="font-weight: bold">\
+                                                        $<span class="amount">' + finalPrice.toFixed(2) + '</span>\
+                                                    </td>\
+                                                </tr>\
+                                            </tbody>\
+                                        </table>\
+                                    </div>\
+                                </div>\
+                            </div>\
+                        </div>\
+                    </div>\
+                </div>';
+    } // <--- END OF OUTER LOOP
+
+    // Display Grand Total at the bottom
+    htmlTxt += '<h4 style="font-weight: bold; padding-left: 20px; margin-top: 20px;">Total Amount Spent (Lifetime): $' + overallPrice.toFixed(2) + '</h4>';
+    document.getElementById("salesHistoryTab").innerHTML = htmlTxt;
+}
                 }).catch(function(error) {
                     console.log(error);
                 });
