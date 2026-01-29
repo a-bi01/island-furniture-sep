@@ -331,16 +331,15 @@ var memberDB = {
                         + 'SECURITYANSWER=?, AGE=?, INCOME=?, SERVICELEVELAGREEMENT=? WHERE EMAIL=?';
                         var sqlArgs = [name,phone,country,address,securityQuestion,securityAnswer,age,income,sla,email];
                         conn.query(sql, sqlArgs, function (err, result) {
-                            if (err) {
-                                conn.end();
-                                return reject(err);
-                            } else {
-                                if(result.affectedRows > 0) {
-                                    conn.end();
-                                    return resolve({success:true});
-                                }
-                            }
-                        });
+  if (err) {
+    conn.end();
+    return reject(err);
+  } else {
+    conn.end();
+    if (result.affectedRows > 0) return resolve({ success: true });
+    return resolve({ success: false, message: "No rows updated" }); 
+  }
+});
                     }
                     else {
                         bcrypt.hash(password, 5, function(err, hash) {
@@ -348,16 +347,15 @@ var memberDB = {
                                 + 'SECURITYANSWER=?, AGE=?, INCOME=?, SERVICELEVELAGREEMENT=?, PASSWORDHASH=? WHERE EMAIL=?';
                             var sqlArgs = [name,phone,country,address,securityQuestion,securityAnswer,age,income,sla,hash,email];
                             conn.query(sql, sqlArgs, function (err, result) {
-                                if (err) {
-                                    conn.end();
-                                    return reject(err);
-                                } else {
-                                    if(result.affectedRows > 0) {
-                                        conn.end();
-                                        return resolve({success:true});
-                                    }
-                                }
-                            });
+  if (err) {
+    conn.end();
+    return reject(err);
+  } else {
+    conn.end();
+    if (result.affectedRows > 0) return resolve({ success: true });
+    return resolve({ success: false, message: "No rows updated" }); // ✅ ADD THIS
+  }
+});
                         });
                     }
                 }
@@ -443,16 +441,15 @@ var memberDB = {
                         var sql = 'UPDATE memberentity SET PASSWORDHASH=?,PASSWORDRESET=? WHERE EMAIL=?';
                         var sqlArgs = [hash,generateRandomNumber(40),email];
                         conn.query(sql, sqlArgs, function (err, result) {
-                            if (err) {
-                                conn.end();
-                                return reject(err);
-                            } else {
-                                if(result.affectedRows > 0) {
-                                    conn.end();
-                                    return resolve({success:true});
-                                }
-                            }
-                        });
+  if (err) {
+    conn.end();
+    return reject(err);
+  } else {
+    conn.end();
+    if (result.affectedRows > 0) return resolve({ success: true });
+    return resolve({ success: false, message: "No rows updated" }); // ✅ ADD THIS
+  }
+});
                     });
                 }
             });
@@ -576,17 +573,17 @@ var memberDB = {
                 }
                 else {
                     var sql = 'UPDATE memberentity SET NAME=?, PHONE=?, ADDRESS=?, ZIPCODE=? WHERE EMAIL=?';
-                    conn.query(sql, [name,contactNum,address,postalCode,email], function (err, result) {
-                        if (err) {
-                            conn.end();
-                            return reject(err);
-                        } else {
-                            if(result.affectedRows > 0) {
-                                conn.end();
-                                return resolve({success:true});
-                            }
-                        }
-                    });
+                   conn.query(sql, [name, contactNum, address, postalCode, email], function (err, result) {
+  if (err) {
+    conn.end();
+    return reject(err);
+  } else {
+    conn.end();
+    if (result.affectedRows > 0) return resolve({ success: true });
+    return resolve({ success: false, message: "No rows updated" });
+  }
+});
+
                 }
             });
         });
