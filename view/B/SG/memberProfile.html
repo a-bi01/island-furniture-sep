@@ -5,7 +5,6 @@
         <script>
             var authToken = null;
             var countryPrefix = localStorage.getItem('urlPrefix');
-            //get token from session
             authToken = sessionStorage.getItem('token');
             if (authToken == null || authToken == "") {
                 window.location.href = '/B/' + countryPrefix + '/memberLogin.html';
@@ -43,7 +42,6 @@
                     document.getElementById("serviceLevelAgreement").checked = true;
                 }
 
-                //Get Bought Items
                 fetch(new Request('/api/getBoughtItem/' + member.id,
                 {
                     method: 'GET',
@@ -53,7 +51,7 @@
                 })).then(function (response) {
                     return response.json();
                 }).then(function (boughtItem) {
-                    if(boughtItem == null || boughtItem == '') { //if member do not have any bought items
+                    if(boughtItem == null || boughtItem == '') { 
                         document.getElementById("salesHistoryTab").innerHTML = '<h5 class="center">You do not have any sales history.</h5>';
                     }
 else {
@@ -61,29 +59,25 @@ else {
     var orderIdList = [];
     var overallPrice = 0;
 
-    // 1. Get all order IDs
     for (i = 0; i < boughtItem.length; i++) {
         orderIdList[i] = boughtItem[i].id;
     }
     
-    // 2. Remove duplicates and Sort
-    orderIdList = [...new Set(orderIdList)];
-    orderIdList.sort((a, b) => a - b); // Simpler way to sort numbers numerically
 
-    // 3. NEW OUTER LOOP: Iterate through EACH Order ID
+    orderIdList = [...new Set(orderIdList)];
+    orderIdList.sort((a, b) => a - b); 
+
     for (var k = 0; k < orderIdList.length; k++) {
         var currentOrderId = orderIdList[k];
-        var finalPrice = 0; // Reset subtotal for this specific order
+        var finalPrice = 0;
         var counter = 0;
 
-        htmlTxt += '<h5>Order #' + (k + 1) + '</h5>'; // Dynamic Order Number
+        htmlTxt += '<h5>Order #' + (k + 1) + '</h5>';
 
-        // Inner Loop: Find items belonging to the currentOrderId
         for (j = 0; j < boughtItem.length; j++) {
-            if (boughtItem[j].id == currentOrderId) { // <--- FIXED: Compare against current loop ID
+            if (boughtItem[j].id == currentOrderId) {
                 var item = boughtItem[j];
 
-                // Display top level info (Date, Address) only once per order
                 if (counter == 0) {
                     let options = {
                         weekday: "long", year: "numeric", month: "long",
@@ -100,7 +94,6 @@ else {
                         <h6>Name: ' + item.customerName + '</h6>\
                         <h6>Contact Number: ' + item.phone + '</h6>';
 
-                    // Start the Table
                     htmlTxt += '\
                     <div class="row">\
                         <div class="col-md-12">\
@@ -122,7 +115,6 @@ else {
                     counter++;
                 }
 
-                // Add the table row for the product
                 htmlTxt += '\
                     <tr class="cart_table_item">\
                         <td class="product-thumbnail">\
@@ -147,7 +139,6 @@ else {
             }
         }
 
-        // Close the table for this order
         htmlTxt += '\
                                                 <tr>\
                                                     <td></td><td></td><td></td>\
@@ -164,9 +155,8 @@ else {
                         </div>\
                     </div>\
                 </div>';
-    } // <--- END OF OUTER LOOP
+    } 
 
-    // Display Grand Total at the bottom
     htmlTxt += '<h4 style="font-weight: bold; padding-left: 20px; margin-top: 20px;">Total Amount Spent (Lifetime): $' + overallPrice.toFixed(2) + '</h4>';
     document.getElementById("salesHistoryTab").innerHTML = htmlTxt;
 }
@@ -197,15 +187,12 @@ else {
             async function submitForm() {
   const form = document.getElementById("profileForm");
   if (!form.reportValidity()) return; 
-  // Trim passwords (spaces shouldn't count)
   const oldPassword = document.getElementById("oldPassword").value.trim();
   const password = document.getElementById("password").value.trim();
   const repassword = document.getElementById("repassword").value.trim();
 
-  // If user typed ANY password field, treat as "wants to change password"
   const wantsPasswordChange = (oldPassword !== "" || password !== "" || repassword !== "");
 
-  // Build update payload (NO password by default)
   const data = {
     email: member.email, 
     name: document.getElementById("name").value,

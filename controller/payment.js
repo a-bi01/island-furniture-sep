@@ -46,62 +46,62 @@ app.get('/api/getStripeCustomer', middleware.checkToken, function (req, res) {
 var bodyParser = require('body-parser');
 var jsonParser = bodyParser.json({ extended: false });
 
-app.post('/api/processPaymentNewCard', [middleware.checkToken, jsonParser], function (req, res) {
-    var memberId = req.body.memberId;
-    var saveCard = req.body.saveCard;
-    var email = req.body.email;
-    var token = req.body.token;
-    var price = req.body.price;
+app.post('/api/processPaymentNewCard', [middleware.checkToken, jsonParser], async function (req, res) {
+  try {
+    const memberId = req.body.memberId;
+    const saveCard = !!req.body.saveCard;
+    const email = req.body.email;
+    const token = req.body.token;
+    const price = Number(req.body.price);
 
-    if (saveCard) {
-        let customer = null;
+    const tokenId = (token && token.id) ? token.id : token;
 
-        stripe.customers.list({ email: email }, async function (err, customers) {
-            if (!err) {
-                if (!customers.data || customers.data.length === 0) {
-                    customer = await stripe.customers.create({ email: email });
-
-                    member.updateMemberStripeCustomerId(email, customer.id)
-                        .catch((err) => {
-                            console.log(err);
-                            return res.status(500).send("Failed to update member's stripe customer id");
-                        });
-
-                } else {
-                    customer = customers.data[0];
-                }
-
-                await stripe.customers.createSource(customer.id, { source: token.id });
-            } else {
-                return res.status(500).send("Failed to get stripe customer");
-            }
-        });
+    if (!tokenId) {
+      return res.send({ success: false, errMsg: "Missing Stripe token (tokenId is empty)." });
     }
 
-    stripe.charges.create({
-        amount: price * 100,
-        currency: "sgd",
-        description: "Island Furniture Purchase",
-        source: 'tok_visa'
-    })
-        .then(function (result) {
-            var data = {
-                memberId,
-                email,
-                price,
-                shoppingCart: req.body.shoppingCart,
-                name: req.body.name,
-                phone: req.body.phone,
-                address: req.body.address,
-                postalCode: req.body.postalCode,
-                deliveryDate: req.body.deliveryDate
-            };
-            insertDbRecords(data, res);
-        })
-        .catch(function (err) {
-            res.send({ success: false, errMsg: err.message });
-        });
+    console.log("[Stripe] tokenId:", tokenId);
+    console.log("[Stripe] secretKey prefix:", (process.env.STRIPE_SECRET_KEY || "").slice(0, 8));
+
+    if (saveCard) {
+      const customers = await stripe.customers.list({ email: email, limit: 1 });
+      let customer = customers.data[0];
+
+      if (!customer) {
+        customer = await stripe.customers.create({ email: email });
+        await member.updateMemberStripeCustomerId(email, customer.id);
+      }
+
+      await stripe.customers.createSource(customer.id, { source: tokenId });
+    }
+
+    await stripe.charges.create({
+      amount: Math.round(price * 100),
+      currency: "sgd",
+      description: "Island Furniture Purchase",
+      source: tokenId
+    });
+
+    const data = {
+      memberId,
+      email,
+      price,
+      shoppingCart: req.body.shoppingCart,
+      name: req.body.name,
+      phone: req.body.phone,
+      address: req.body.address,
+      postalCode: req.body.postalCode,
+      deliveryDate: req.body.deliveryDate
+    };
+
+    insertDbRecords(data, res);
+
+  } catch (err) {
+    console.log(err);
+    return res.send({ success: false, errMsg: err.message });
+  }
 });
+
 
 
 // ----------------------------------------
