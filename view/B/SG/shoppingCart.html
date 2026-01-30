@@ -37,7 +37,6 @@
             var cardId = null;
             document.addEventListener('DOMContentLoaded', function(){
                 memberEmail = sessionStorage.getItem('memberEmail');
-                //disable checkout button is shopping cart is empty
                 if(shoppingCart == null || shoppingCart == '') {
                     document.getElementById('btmDiv').innerHTML = '<div align="right" style="cursor: not-allowed;"><a><button disabled="true" class="btn btn-primary btn-lg">Check Out</button></a></div>';
                 }
@@ -45,7 +44,6 @@
                     var htmlTxt = '';
                     for(i = 0; i < shoppingCart.length; i++) {
                         var cartItem = shoppingCart[i];
-                        //generate html for cart items
                         htmlTxt += '\
                             <tr class="cart_table_item">\
                                 <td class="product-remove">\
@@ -105,9 +103,11 @@
                     return response.json();
                 }).then(function (data) {
                     var htmlTxt = '';
-                    if(data.success) {
-                        stripeCustomer = data.customer;
-                        var cards = data.customer.sources.data;
+                    if (data.success && data.customer) {
+  stripeCustomer = data.customer;
+  const cards = (data.customer.sources && Array.isArray(data.customer.sources.data))
+    ? data.customer.sources.data
+    : [];
                         for(i = 0; i < cards.length; i++) {
                             var card = cards[i];
                             switch(card.brand) {
@@ -165,7 +165,7 @@
                     console.log(error);
                 });
 
-                var stripe = Stripe('pk_test_VmXIT1btdiAeYAFhGQuUPVgU');
+                var stripe = Stripe('pk_test_51StNthK0ixzpTilpCTw6vKzCvVRWoK6sDYZdmjxc3krMazjHKVOIRvVWf727WKS7rtG0BqzPhhkWuDKt8XW0GojF00XyroatNA');
                 var elements = stripe.elements();
                 var style = {
                     base: {
@@ -236,7 +236,7 @@
                                     var errorElement = document.getElementById('card-errors');
                                     errorElement.textContent = result.error.message;
                                 } else {
-                                    paymentData.token = result.token;
+                                    paymentData.token = result.token.id; 
                                     paymentData.saveCard = document.getElementById('saveCard').checked;
                                     processPaymentNewCard(paymentData);
                                 }
